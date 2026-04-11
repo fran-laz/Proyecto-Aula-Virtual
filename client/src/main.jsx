@@ -6,11 +6,8 @@ import { AppProvider } from "./context/AppProvider";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
-createRoot(document.getElementById("root")).render(
-  <AppProvider>
-    <App />
-  </AppProvider>
+    <AppProvider>
+      <App />
+    </AppProvider>
+  </StrictMode>
 );
