@@ -5,6 +5,9 @@ import './App.css';
 function App() {
   const [aulas, setAulas] = useState([]);
   const [nombre, setNombre] = useState('');
+  
+  // Estado para la nueva funcionalidad (HU 2)
+  const [codigoIngreso, setCodigoIngreso] = useState('');
 
   useEffect(() => {
     fetchAulas();
@@ -12,8 +15,7 @@ function App() {
 
   const fetchAulas = async () => {
     if (!supabase) {
-      // Mock para cuando no hayan puesto credenciales reales en .env
-      setAulas([{ id: 1, nombre: 'Base de Datos (MOCK)', codigo: 'BD123' }]);
+      setAulas([{ id: 1, nombre: 'Ingeniería de Software (MOCK)', codigo: '12345' }]);
       return;
     }
     const { data, error } = await supabase.from('aulas').select('*');
@@ -26,7 +28,6 @@ function App() {
     if (!nombre.trim()) return;
     const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    // Optimistic UI o mock mode
     const newAula = { nombre, codigo };
     setAulas([...aulas, newAula]);
     setNombre('');
@@ -37,12 +38,42 @@ function App() {
     }
   };
 
+  // Función para HU 2: Estudiante entra a clase
+  const handleIngresar = () => {
+    if (codigoIngreso.trim() === '12345') {
+      alert('¡Ingreso exitoso! Te has unido a la clase: Ingeniería de Software');
+      setCodigoIngreso('');
+    } else if (codigoIngreso.trim().length > 0) {
+      alert('Código incorrecto. Intenta probando con el código de prueba: 12345');
+    }
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h2>Gestor de Aulas Virtuales</h2>
       
+      {/* Panel 1: Ingreso Estudiante (HU 2) */}
+      <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#e3f2fd' }}>
+        <strong style={{ color: '#1565c0' }}>Estudiante: Ingresar a una Clase</strong><br/><br/>
+        <label>Código de Invitación: </label>
+        <input 
+          type="text" 
+          value={codigoIngreso} 
+          onChange={(e) => setCodigoIngreso(e.target.value)} 
+          style={{ marginRight: '10px' }}
+          placeholder="Escribe 12345 para probar"
+        />
+        <button 
+          onClick={handleIngresar} 
+          style={{ background: '#1976d2', color: 'white', padding: '5px 15px', cursor: 'pointer', border: '1px solid #0d47a1' }}
+        >
+          Unirse
+        </button>
+      </div>
+
+      {/* Panel 2: Creación Docente (HU 0) */}
       <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#f5f5f5' }}>
-        <strong>Datos del Aula</strong><br/><br/>
+        <strong>Docente: Crear Nueva Clase</strong><br/><br/>
         <label>Nombre del Aula: </label>
         <input 
           type="text" 
