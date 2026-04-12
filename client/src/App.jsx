@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import CreateTask from './components/CreateTask/CreateTask';
 import './App.css';
 
 function App() {
@@ -8,6 +9,10 @@ function App() {
   
   // Estado para la nueva funcionalidad (HU 2)
   const [codigoIngreso, setCodigoIngreso] = useState('');
+
+  // Estado de vista
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedAula, setSelectedAula] = useState(null);
 
   useEffect(() => {
     fetchAulas();
@@ -47,6 +52,23 @@ function App() {
       alert('Código incorrecto. Intenta probando con el código de prueba: 12345');
     }
   };
+
+  if (currentView === 'createTask') {
+    return (
+      <CreateTask 
+        aula={selectedAula}
+        onCancel={() => {
+          setCurrentView('home');
+          setSelectedAula(null);
+        }} 
+        onTaskCreated={(tarea) => {
+          alert(`Tarea "${tarea.titulo}" creada correctamente${selectedAula ? ` para la clase ${selectedAula.nombre}` : ''}.`);
+          setCurrentView('home');
+          setSelectedAula(null);
+        }} 
+      />
+    );
+  }
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
@@ -106,7 +128,16 @@ function App() {
               <td>{aula.nombre}</td>
               <td>{aula.codigo}</td>
               <td>
-                <button style={{ background: '#f44336', color: 'white', border: '1px solid #d32f2f', cursor: 'pointer' }}>
+                <button 
+                  onClick={() => {
+                    setSelectedAula(aula);
+                    setCurrentView('createTask');
+                  }}
+                  style={{ background: '#2196F3', color: 'white', border: '1px solid #1976D2', cursor: 'pointer', marginRight: '8px', padding: '4px 8px', borderRadius: '4px' }}
+                >
+                  Crear Tarea
+                </button>
+                <button style={{ background: '#f44336', color: 'white', border: '1px solid #d32f2f', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}>
                   Eliminar
                 </button>
               </td>
