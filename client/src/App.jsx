@@ -34,17 +34,21 @@ function App() {
     e.preventDefault();
     const email = `${username.trim()}@aula.test`;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert("Error al iniciar sesión: " + error.message);
+    if (error) alert("Usuario o contraseña incorrectos.");
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     const email = `${username.trim()}@aula.test`;
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: { data: { nombre: username.trim() } }
+    });
     if (error) {
        alert("Error al registrarse: " + error.message);
     } else {
-       alert("Registro exitoso. Para que el inicio sea directo, asegúrate de desactivar 'Confirm email' en las opciones de Auth en Supabase!");
+       alert("¡Registro exitoso! Entrando...");
     }
   };
 
@@ -56,26 +60,24 @@ function App() {
   const fetchAulas = async () => {
     if (!supabase) return;
     
-    // Obtenemos las aulas. Nota: en una app completada deberíamos traer las nuestras y a las que estamos unidos.
-    // Por simplicidad, traemos todas y definimos cuáles somos dueños para probar (O crear RLS policies).
     const { data, error } = await supabase.from('aulas').select('*');
     if (!error && data) {
        setAulas(data.map(aula => ({
          ...aula,
-         role: aula.creator_id === session.user.id ? 'docente' : 'estudiante'
+         role: aula.creador_id === session.user.id ? 'docente' : 'estudiante'
        })));
     }
   };
 
   const handleAgregar = async () => {
     if (!nombre.trim()) return;
-    const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const codigo_invitacion = Math.random().toString(36).substring(2, 8).toUpperCase();
     
     if (supabase) {
       const { data, error } = await supabase.from('aulas').insert([{ 
         nombre, 
-        codigo, 
-        creator_id: session.user.id 
+        codigo_invitacion, 
+        creador_id: session.user.id 
       }]).select();
       
       if (error) {
@@ -84,8 +86,7 @@ function App() {
         setAulas([...aulas, { ...data[0], role: 'docente' }]);
         setNombre('');
       } else {
-        // En caso que no retorne data (sucede a veces según la política RLS)
-        setAulas([...aulas, { nombre, codigo, creator_id: session.user.id, role: 'docente' }]);
+        setAulas([...aulas, { nombre, codigo_invitacion, creador_id: session.user.id, role: 'docente' }]);
         setNombre('');
       }
     }
@@ -95,10 +96,9 @@ function App() {
     if (!codigoIngreso.trim()) return;
     
     if (supabase) {
-      const { data, error } = await supabase.from('aulas').select('*').eq('codigo', codigoIngreso).single();
+      const { data, error } = await supabase.from('aulas').select('*').eq('codigo_invitacion', codigoIngreso).single();
       
       if (data) {
-        // En base de datos real insertaríamos: insert({ aula_id: data.id, user_id: session.user.id }) a otra tabla
         setAulas([...aulas, { ...data, role: 'estudiante' }]);
         setCodigoIngreso('');
         alert('¡Te uniste existosamente a ' + data.nombre + '!');
@@ -208,7 +208,7 @@ function App() {
             <tr key={index} style={{ color: 'black' }}>
               <td>{index + 1}</td>
               <td>{aula.nombre} {aula.role === 'estudiante' ? '(Estudiante)' : '(Docente)'}</td>
-              <td>{aula.codigo}</td>
+              <td>{aula.codigo_invitacion}</td>
               <td>
                 {aula.role !== 'estudiante' ? (
                   <>
