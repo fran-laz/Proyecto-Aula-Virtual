@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import CreateTask from './components/CreateTask/CreateTask';
+import StudentTasks from './components/StudentTasks/StudentTasks';
 import './App.css';
 
 function App() {
@@ -211,6 +212,18 @@ function App() {
     );
   }
 
+  if (currentView === 'studentTasks' && selectedAula) {
+    return (
+      <StudentTasks 
+        aula={selectedAula}
+        onBack={() => {
+          setCurrentView('home');
+          setSelectedAula(null);
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', color: 'black' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -273,7 +286,13 @@ function App() {
                   <td>{index + 1}</td>
                   <td>{aula.nombre}</td>
                   <td>
-                    <button style={{ background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}>
+                    <button 
+                      onClick={() => {
+                        setSelectedAula(aula);
+                        setCurrentView('studentTasks');
+                      }}
+                      style={{ background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}
+                    >
                       Ver Tareas
                     </button>
                   </td>
