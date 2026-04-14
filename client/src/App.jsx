@@ -40,14 +40,27 @@ function App() {
   const handleRegister = async (e) => {
     e.preventDefault();
     const email = `${username.trim()}@aula.test`;
-    const { error } = await supabase.auth.signUp({ 
+    const { data, error } = await supabase.auth.signUp({ 
       email, 
       password,
       options: { data: { nombre: username.trim() } }
     });
+    
     if (error) {
        alert("Error al registrarse: " + error.message);
     } else {
+       if (data?.user) {
+         // Insertamos el usuario en la tabla "perfiles" para cumplir la llave foránea
+         const { error: perfilError } = await supabase.from('perfiles').insert([{
+           id: data.user.id,
+           nombre: username.trim()
+           // rol se asignará según cómo tengas configurada tu tabla
+         }]);
+         
+         if (perfilError) {
+           console.error("Error guardando perfil:", perfilError);
+         }
+       }
        alert("¡Registro exitoso! Entrando...");
     }
   };
@@ -58,15 +71,33 @@ function App() {
   };
 
   const fetchAulas = async () => {
-    if (!supabase) return;
+    if (!supabase || !session?.user?.id) return;
     
-    const { data, error } = await supabase.from('aulas').select('*');
-    if (!error && data) {
-       setAulas(data.map(aula => ({
-         ...aula,
-         role: aula.creador_id === session.user.id ? 'docente' : 'estudiante'
-       })));
+    // 1. Aulas que el usuario creó (Docente)
+    const { data: misAulas, error: errMisAulas } = await supabase
+      .from('aulas')
+      .select('*')
+      .eq('creador_id', session.user.id);
+      
+    // 2. Aulas a las que se unió (Estudiante)
+    const { data: uniones, error: errUniones } = await supabase
+      .from('aula_estudiantes')
+      .select('aulas(*)')
+      .eq('estudiante_id', session.user.id);
+
+    let listado = [];
+
+    if (!errMisAulas && misAulas) {
+       listado = [...listado, ...misAulas.map(a => ({ ...a, role: 'docente' }))];
     }
+    
+    if (!errUniones && uniones) {
+       // Filter out any potential nulls if a referenced aula was deleted but the cascade didn't run or something unexpected
+       const unidas = uniones.map(u => ({ ...u.aulas, role: 'estudiante' })).filter(a => a && a.id);
+       listado = [...listado, ...unidas];
+    }
+    
+    setAulas(listado);
   };
 
   const handleAgregar = async () => {
@@ -95,13 +126,44 @@ function App() {
   const handleIngresar = async () => {
     if (!codigoIngreso.trim()) return;
     
-    if (supabase) {
-      const { data, error } = await supabase.from('aulas').select('*').eq('codigo_invitacion', codigoIngreso).single();
+    if (supabase && session?.user?.id) {
+      const codigoBuscado = codigoIngreso.trim().toUpperCase();
+      const { data, error } = await supabase.from('aulas').select('*').eq('codigo_invitacion', codigoBuscado).single();
       
       if (data) {
-        setAulas([...aulas, { ...data, role: 'estudiante' }]);
+        if (data.creador_id === session.user.id) {
+           alert('No puedes unirte como estudiante a una clase que tú creaste.');
+           setCodigoIngreso('');
+           return;
+        }
+
+        const yaUnido = aulas.find(a => a.id === data.id);
+        if (yaUnido) {
+          alert('Ya estás unido a esta clase.');
+          setCodigoIngreso('');
+          return;
+        }
+
+        // Guardar la inscripción en la base de datos
+        const { error: insertError } = await supabase
+           .from('aula_estudiantes')
+           .insert([{ aula_id: data.id, estudiante_id: session.user.id }]);
+
+        if (insertError) {
+           // Código 23505 es violación de llave única (unique constraint)
+           if (insertError.code === '23505') {
+               alert('Ya estabas registrado en esta clase en la base de datos.');
+               fetchAulas(); // Refrescar por si acaso
+           } else {
+               alert('Error al guardar tu inscripción: ' + insertError.message);
+               return;
+           }
+        } else {
+           setAulas([...aulas, { ...data, role: 'estudiante' }]);
+        }
+        
         setCodigoIngreso('');
-        alert('¡Te uniste existosamente a ' + data.nombre + '!');
+        alert('¡Te uniste exitosamente a ' + data.nombre + '!');
       } else {
         alert('Código incorrecto o aula no encontrada.');
       }
