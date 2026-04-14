@@ -13,6 +13,7 @@ function App() {
   const [codigoIngreso, setCodigoIngreso] = useState('');
   const [currentView, setCurrentView] = useState('home');
   const [selectedAula, setSelectedAula] = useState(null);
+  const [activeTab, setActiveTab] = useState('estudiante');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -220,86 +221,136 @@ function App() {
         </div>
       </div>
       
-      {/* Panel 1: Ingreso Estudiante */}
-      <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#e3f2fd' }}>
-        <strong style={{ color: '#1565c0' }}>Estudiante: Ingresar a una Clase</strong><br/><br/>
-        <label>Código de Invitación: </label>
-        <input 
-          type="text" 
-          value={codigoIngreso} 
-          onChange={(e) => setCodigoIngreso(e.target.value)} 
-          style={{ marginRight: '10px' }}
-        />
-        <button 
-          onClick={handleIngresar} 
-          style={{ background: '#1976d2', color: 'white', padding: '5px 15px', cursor: 'pointer', border: '1px solid #0d47a1' }}
-        >
-          Unirse
-        </button>
+      {/* Pestañas de Navegación */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+         <button 
+           onClick={() => setActiveTab('estudiante')}
+           style={{ padding: '10px 20px', cursor: 'pointer', background: activeTab === 'estudiante' ? '#1976d2' : '#e0e0e0', color: activeTab === 'estudiante' ? 'white' : 'black', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}
+         >
+           👨‍🎓 Vista de Estudiante
+         </button>
+         <button 
+           onClick={() => setActiveTab('docente')}
+           style={{ padding: '10px 20px', cursor: 'pointer', background: activeTab === 'docente' ? '#4CAF50' : '#e0e0e0', color: activeTab === 'docente' ? 'white' : 'black', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}
+         >
+           👨‍🏫 Vista de Docente
+         </button>
       </div>
 
-      {/* Panel 2: Creación Docente */}
-      <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#f5f5f5' }}>
-        <strong>Docente: Crear Nueva Clase</strong><br/><br/>
-        <label>Nombre del Aula: </label>
-        <input 
-          type="text" 
-          value={nombre} 
-          onChange={(e) => setNombre(e.target.value)} 
-          style={{ marginRight: '10px' }}
-        />
-        <button 
-          onClick={handleAgregar} 
-          style={{ background: '#4CAF50', color: 'white', padding: '5px 15px', cursor: 'pointer', border: '1px solid #388E3C' }}
-        >
-          Agregar Nueva
-        </button>
-      </div>
+      {activeTab === 'estudiante' && (
+        <>
+          {/* Panel: Ingreso Estudiante */}
+          <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#e3f2fd', borderRadius: '8px' }}>
+            <strong style={{ color: '#1565c0', fontSize: '1.1em' }}>Unirse a una Clase Nueva</strong><br/><br/>
+            <label>Código de Invitación: </label>
+            <input 
+              type="text" 
+              value={codigoIngreso} 
+              onChange={(e) => setCodigoIngreso(e.target.value)} 
+              style={{ marginRight: '10px', padding: '5px' }}
+              placeholder="Ej. A1B2C"
+            />
+            <button 
+              onClick={handleIngresar} 
+              style={{ background: '#1976d2', color: 'white', padding: '6px 15px', cursor: 'pointer', border: 'none', borderRadius: '4px' }}
+            >
+              Unirse
+            </button>
+          </div>
 
-      <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'white' }}>
-        <thead>
-          <tr style={{ background: '#e0e0e0', color: 'black' }}>
-            <th>#</th>
-            <th>Nombre del Aula</th>
-            <th>Código de Invitación</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {aulas.map((aula, index) => (
-            <tr key={index} style={{ color: 'black' }}>
-              <td>{index + 1}</td>
-              <td>{aula.nombre} {aula.role === 'estudiante' ? '(Estudiante)' : '(Docente)'}</td>
-              <td>{aula.codigo_invitacion}</td>
-              <td>
-                {aula.role !== 'estudiante' ? (
-                  <>
+          <h3 style={{ marginTop: '30px' }}>Mis Clases Inscritas</h3>
+          <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'white' }}>
+            <thead>
+              <tr style={{ background: '#e0e0e0', color: 'black' }}>
+                <th>#</th>
+                <th>Nombre del Aula</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {aulas.filter(a => a.role === 'estudiante').map((aula, index) => (
+                <tr key={index} style={{ color: 'black' }}>
+                  <td>{index + 1}</td>
+                  <td>{aula.nombre}</td>
+                  <td>
+                    <button style={{ background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}>
+                      Ver Tareas
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {aulas.filter(a => a.role === 'estudiante').length === 0 && (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', color: '#666', padding: '20px' }}>Aún no te has unido a ninguna clase. Usa un código arriba para empezar.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {activeTab === 'docente' && (
+        <>
+          {/* Panel: Creación Docente */}
+          <div style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', background: '#e8f5e9', borderRadius: '8px' }}>
+            <strong style={{ color: '#2e7d32', fontSize: '1.1em' }}>Crear Nueva Clase</strong><br/><br/>
+            <label>Nombre del Aula: </label>
+            <input 
+              type="text" 
+              value={nombre} 
+              onChange={(e) => setNombre(e.target.value)} 
+              style={{ marginRight: '10px', padding: '5px' }}
+              placeholder="Ej. Matemáticas I"
+            />
+            <button 
+              onClick={handleAgregar} 
+              style={{ background: '#4CAF50', color: 'white', padding: '6px 15px', cursor: 'pointer', border: 'none', borderRadius: '4px' }}
+            >
+              Crear Aula
+            </button>
+          </div>
+
+          <h3 style={{ marginTop: '30px' }}>Clases que Imparto</h3>
+          <table border="1" cellPadding="8" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'white' }}>
+            <thead>
+              <tr style={{ background: '#e0e0e0', color: 'black' }}>
+                <th>#</th>
+                <th>Nombre del Aula</th>
+                <th>Código para Invitar</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {aulas.filter(a => a.role === 'docente').map((aula, index) => (
+                <tr key={index} style={{ color: 'black' }}>
+                  <td>{index + 1}</td>
+                  <td>{aula.nombre}</td>
+                  <td style={{ fontWeight: 'bold', color: '#d32f2f', letterSpacing: '2px' }}>{aula.codigo_invitacion}</td>
+                  <td>
                     <button 
                       onClick={() => {
                         setSelectedAula(aula);
                         setCurrentView('createTask');
                       }}
-                      style={{ background: '#2196F3', color: 'white', border: '1px solid #1976D2', cursor: 'pointer', marginRight: '8px', padding: '4px 8px', borderRadius: '4px' }}
+                      style={{ background: '#2196F3', color: 'white', border: 'none', cursor: 'pointer', marginRight: '8px', padding: '4px 8px', borderRadius: '4px' }}
                     >
                       Crear Tarea
                     </button>
-                    <button style={{ background: '#f44336', color: 'white', border: '1px solid #d32f2f', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}>
+                    <button style={{ background: '#f44336', color: 'white', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px' }}>
                       Eliminar
                     </button>
-                  </>
-                ) : (
-                  <span style={{ color: '#666', fontStyle: 'italic' }}>Solo lectura</span>
-                )}
-              </td>
-            </tr>
-          ))}
-          {aulas.length === 0 && (
-            <tr>
-              <td colSpan="4" style={{ textAlign: 'center', color: 'black' }}>No hay aulas registradas.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                  </td>
+                </tr>
+              ))}
+              {aulas.filter(a => a.role === 'docente').length === 0 && (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', color: '#666', padding: '20px' }}>No has creado ninguna clase todavía.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }
