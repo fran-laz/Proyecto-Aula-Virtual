@@ -41,7 +41,7 @@ const TaskDelivery = ({ tarea, aula, onBack }) => {
 
       // Payload para la tabla entregas
       const entrega = {
-        tarea_id: tarea.id,
+        tarea_id: tarea.identificación,
         estudiante_id: userId,
         archivo: base64Image
       };
@@ -79,7 +79,7 @@ const TaskDelivery = ({ tarea, aula, onBack }) => {
       <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{ background: '#e8f5e9', padding: '40px', borderRadius: '8px', border: '1px solid #c8e6c9' }}>
           <h2 style={{ color: '#2e7d32' }}>¡Tarea Entregada!</h2>
-          <p style={{ color: '#555', fontSize: '18px' }}>Tu tarea "{tarea.titulo}" se ha enviado correctamente.</p>
+          <p style={{ color: '#555', fontSize: '18px' }}>Tu tarea "{tarea.título}" se ha enviado correctamente.</p>
           <button 
             onClick={onBack}
             style={{ 
@@ -114,16 +114,15 @@ const TaskDelivery = ({ tarea, aula, onBack }) => {
 
       <div style={{ background: '#fff', borderRadius: '8px', padding: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
         <h3 style={{ marginTop: 0, color: '#1976d2', borderBottom: '1px solid #e0e0e0', paddingBottom: '10px' }}>
-          {tarea.titulo}
+          {tarea.título}
         </h3>
         
         <div style={{ marginBottom: '25px', background: '#f9f9f9', padding: '15px', borderRadius: '6px', borderLeft: '4px solid #1976d2' }}>
           <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>Instrucciones:</p>
-          <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#444' }}>{tarea.descripcion || "Sin instrucciones detalladas"}</p>
+          <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#444' }}>{tarea.descripción || "Sin instrucciones detalladas"}</p>
           
           <div style={{ marginTop: '15px', display: 'flex', gap: '20px', fontSize: '14px', color: '#666' }}>
-            <span><strong>Puntuación:</strong> {tarea.puntuacion} puntos</span>
-            <span><strong>Límite:</strong> {tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleString() : 'Sin límite'}</span>
+            <span><strong>Límite:</strong> {tarea.fecha_límite ? new Date(tarea.fecha_límite).toLocaleString() : 'Sin límite'}</span>
           </div>
         </div>
 

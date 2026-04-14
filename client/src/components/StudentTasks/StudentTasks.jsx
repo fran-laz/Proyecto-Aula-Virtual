@@ -72,7 +72,7 @@ const StudentTasks = ({ aula, onBack }) => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {tareas.map((tarea) => (
               <div 
-                key={tarea.id} 
+                key={tarea.identificación} 
                 style={{ 
                   border: '1px solid #e0e0e0', 
                   borderRadius: '6px', 
@@ -84,10 +84,9 @@ const StudentTasks = ({ aula, onBack }) => {
                 }}
               >
                 <div>
-                  <h3 style={{ margin: '0 0 5px 0', color: '#1976d2' }}>{tarea.titulo}</h3>
+                  <h3 style={{ margin: '0 0 5px 0', color: '#1976d2' }}>{tarea.título}</h3>
                   <p style={{ margin: '0 0 10px 0', color: '#555', fontSize: '14px' }}>
-                    Fecha límite: {tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleString() : 'Sin fecha límite'} <br/>
-                    Puntuación: {tarea.puntuacion || 100} pts
+                    Fecha límite: {tarea.fecha_límite ? new Date(tarea.fecha_límite).toLocaleString() : 'Sin fecha límite'} <br/>
                   </p>
                 </div>
                 <button 

@@ -16,10 +16,9 @@ const CreateTask = ({ aula, onCancel, onTaskCreated }) => {
     
     // Preparar el objeto de la tarea
     const nuevaTarea = {
-      titulo,
-      descripcion,
-      fecha_entrega: fechaEntrega || null,
-      puntuacion: parseInt(puntuacion) || 0,
+      "título": titulo,
+      "descripción": descripcion,
+      "fecha_límite": fechaEntrega || null,
       aula_id: aula?.id || null
     };
 

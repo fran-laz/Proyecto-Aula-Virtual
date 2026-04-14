@@ -204,7 +204,7 @@ function App() {
           setSelectedAula(null);
         }} 
         onTaskCreated={(tarea) => {
-          alert(`Tarea "${tarea.titulo}" creada correctamente${selectedAula ? ` para la clase ${selectedAula.nombre}` : ''}.`);
+          alert(`Tarea "${tarea.título || tarea.titulo}" creada correctamente${selectedAula ? ` para la clase ${selectedAula.nombre}` : ''}.`);
           setCurrentView('home');
           setSelectedAula(null);
         }} 
